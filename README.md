@@ -73,6 +73,12 @@ new_size = [720,360]
 image.set_size(new_size)
 ```
 
+#### Concatenating Clips
+```
+clip_list = ['path_to_video1', 'path_to_video2']
+concatenate_clips(clip_list, 'output_name.mp4')
+```
+
 ## Contributing
 This project is in the very early stages of development. Please feel free to fork the repository and mess around with it.
 
