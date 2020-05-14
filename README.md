@@ -1,12 +1,15 @@
 # ffmpeg-python-wrapper
-ffmpeg-python-wrapper is a lightweight python binder built for the FFmpeg library. Unlike most of the other Ffmpeg python bindings,
-ffmpeg-python-wrapper supports a limited set of ffmpeg tools designed for quick and easy video & music editing with very clear 
-python syntax.
+<b>ffmpeg-python-wrapper</b> is a lightweight python binder built for the FFmpeg library. Unlike most of the other Ffmpeg python bindings,
+this project focuses on providing user friendly documentation and clear & simple syntax to perform music, image, and video editing tasks.
 
-### Example Creations
+## Example Creations
 <p align="center">
-    <a href="https://www.youtube.com/watch?v=W91XvBo1jM8"><img src="src/everything_i_wanted_-_slowed_&_reverbed.gif" height="250"></a>
-    <a href="https://www.youtube.com/watch?v=AjzYZ4_6dU0&t=49s"><img src="src/instagram_by_DEAN_-_slowed_&_reverbed.gif" height="250"></a>
+    <a href="https://www.youtube.com/watch?v=W91XvBo1jM8" target="_blank">
+        <img src="src/everything_i_wanted_-_slowed_&_reverbed.gif" height="250">
+    </a>
+    <a href="https://www.youtube.com/watch?v=AjzYZ4_6dU0&t=49s" target="_blank">
+        <img src="src/instagram_by_DEAN_-_slowed_&_reverbed.gif" height="250">
+    </a>
 </p>
 
 ## Prerequisites
