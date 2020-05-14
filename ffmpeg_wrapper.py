@@ -7,6 +7,8 @@ import sys
 def find_name(file):
     """
     This function returns the name of the file without an extension
+    It accepts one input:
+        -> file: string (travis_scott.mp3)
 
     Returns a string | Ex: 'travis_scott'
     """
@@ -16,9 +18,27 @@ def find_name(file):
             break
     return file[:-index]
 
+def file_types(filename):
+    '''
+    This function checks for the file type by looping over filename
+    in reverse and returning the text of everything behind the "."
+
+    Returns a string value indicating file type (Ex: 'wav', 'mp3')
+    and a string value indicating file name (Ex: 'travis_scott', 'harry_styles')
+    '''
+
+    for index in range(len(filename)):
+        if filename[::-1][index] == '.':
+            break
+    return filename[-index:], filename[:-index-1]
+
+
 def add_music(video_file,music_file):
     """
     This function combines video and audio using FFMPEG
+    It accepts two inputs: 
+        -> video_file: string ('video.mp4')
+        -> music_file: string ('music.mp3')
     """
     output_file = find_name(music_file) + 'final.mp4'
     cmd = f'ffmpeg -y -i {video_file} -i {music_file} -c copy -map 0:v:0 -map 1:a:0 {output_file}'
@@ -40,6 +60,34 @@ def convert_time(time):
             output_list.append(str(amount))
         time = remainder
     return ':'.join(output_list)
+
+def concatenate_clips(media_list, output_name):
+    """
+    This function concatentates a list of media files into one singular clip 
+    It accepts two inputs:
+        -> media_list: array (['travis_scott.mp4', 'post_malone.mp4'])
+        -> output_name: string ('output.mp4')
+    """
+    f = open('list.txt', 'w')
+    for media in media_list:
+        f.write(f"file '{media}'\n")
+    f.close()
+    cmd = f'ffmpeg -y -f concat -safe 0 -i list.txt -c copy {output_name}'
+    subprocess.call(cmd.split(' '))
+
+def overlay(video, image):
+    """
+    The script uses FFMPEG to overlay an image over a video. It accepts two inputs.
+            -> video: string (location of video)
+            -> image: string (location of string)
+
+    Example outputs:
+            -> Overlay a snow animation over village
+            -> Overlay a rain animation over city
+    """
+    cmd = f'ffmpeg -y -i {image} -i {video} -filter_complex [1:v]colorkey=0x000000:0.5:0.5[ckout];[0:v][ckout]overlay[out] -map [out] -c:a copy -c:v libx264 {"_temp" + video}'
+    subprocess.call(cmd.split(' '))
+    return "_temp" + video
 
 def clean_file(string):
     """
@@ -65,16 +113,6 @@ def cleanup():
     for file in os.listdir():
         if file[:5] == '_temp':
             os.remove(file)
-    try:
-        f = open('list.txt','r')
-        line = f.readline()[5:-1].rstrip('\n').replace("'","")
-        while line:
-            os.remove(line)
-            line = f.readline()[5:].rstrip('\n').replace("'","")
-        f.close()
-        os.remove('list.txt')
-    except:
-        pass
 
 class Media:
     def __init__(self, media_file):
@@ -185,37 +223,33 @@ class Media:
         listed within the file into a singular video
         """
         curr = self.duration()
-        repeat = math.ceil(target_duration/curr)
-        f = open('list.txt','w')
-        for i in range(repeat):
-            extension, name = file_types(self.file)
-            f.write(f"file '{name}{i}.{extension}'\n")
-            #make sure to change depending on operating system
-            cmd = f'cp {self.file} {name}{i}.{extension}'
-            print(cmd)
-            subprocess.call(cmd, shell=True)
-        f.close()
-        time.sleep(1)
 
-        cmd = f'ffmpeg -y -f concat -safe 0 -i list.txt -c copy {"_temp" + self.file}'
-        subprocess.call(cmd.split(' '))
-        self.file = '_temp' + self.file
+        if target_duration > curr:
+            repeat = math.ceil(target_duration/curr)
+            f = open('list.txt','w')
+            for i in range(repeat):
+                extension, name = file_types(self.file)
+                f.write(f"file '{name}{i}.{extension}'\n")
+                #make sure to change depending on operating system
+                cmd = f'cp {self.file} {name}{i}.{extension}'
+                print(cmd)
+                subprocess.call(cmd, shell=True)
+            f.close()
+
+            cmd = f'ffmpeg -y -f concat -safe 0 -i list.txt -c copy {"_temp" + self.file}'
+            subprocess.call(cmd.split(' '))
+            self.file = '_temp' + self.file
+
+            #cleaning copied files
+            f = open('list.txt','r')
+            line = f.readline()[5:-1].rstrip('\n').replace("'","")
+            while line:
+                os.remove(line)
+                line = f.readline()[5:].rstrip('\n').replace("'","")
+            f.close()
+            os.remove('list.txt')
+
         self.set_duration(target_duration)
-
-
-    def overlay(self, video, image):
-        """
-        The script uses FFMPEG to overlay an image over a video. It accepts two inputs.
-                -> video: string (location of video)
-                -> image: string (location of string)
-
-        Example outputs:
-                -> Overlay a snow animation over village
-                -> Overlay a rain animation over city
-        """
-        cmd = f'ffmpeg -y -i {image} -i {video} -filter_complex [1:v]colorkey=0x000000:0.5:0.5[ckout];[0:v][ckout]overlay[out] -map [out] -c:a copy -c:v libx264 {"_temp" + video}'
-        subprocess.call(cmd.split(' '))
-        self.file = "_temp" + video
 
     def convert(self, extension):
         """
@@ -227,7 +261,6 @@ class Media:
         subprocess.call(cmd.split(' '))
         self.file = find_name(self.file) + extension
 
-
 if __name__ == '__main__':
     image = Media(sys.argv[1])
     video = Media(sys.argv[2])
@@ -236,7 +269,7 @@ if __name__ == '__main__':
     if video.duration() > 10:
         video.set_duration(10)
     video.set_size(image.size())
-    video.overlay(video.file, image.file)
+    video = Media(overlay(video.file, image.file))
     video.loop(target_duration)
     add_music(video.file, song.file)
     cleanup()
