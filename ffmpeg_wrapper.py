@@ -4,27 +4,25 @@ import os
 import time
 import sys
 
+def find_name(file):
+    """
+    This function returns the name of the file without an extension
+
+    Returns a string | Ex: 'travis_scott'
+    """
+    for index in range(len(file)):
+        if file[::-1][index] == '.':
+            index += 1
+            break
+    return file[:-index]
+
 def add_music(video_file,music_file):
     """
     This function combines video and audio using FFMPEG
     """
-    output_file = find_name(music_file) + '_slow_and_reverbed_video.mp4'
+    output_file = find_name(music_file) + 'final.mp4'
     cmd = f'ffmpeg -y -i {video_file} -i {music_file} -c copy -map 0:v:0 -map 1:a:0 {output_file}'
     subprocess.call(cmd.split(' '))
-
-def file_types(filename):
-    '''
-    This function checks for the file type by looping over filename
-    in reverse and returning the text of everything behind the "."
-
-    Returns a string value indicating file type (Ex: 'wav', 'mp3')
-    and a string value indicating file name (Ex: 'travis_scott', 'harry_styles')
-    '''
-
-    for index in range(len(filename)):
-        if filename[::-1][index] == '.':
-            break
-    return filename[-index:], filename[:-index-1]
 
 def convert_time(time):
     """
@@ -219,9 +217,16 @@ class Media:
         subprocess.call(cmd.split(' '))
         self.file = "_temp" + video
 
-    
+    def convert(self, extension):
+        """
+        The script uses FFMPEG to convert video files.
+        It accepts one input:
+            -> extension: string (.mp3, .mp4, ect.)
+        """
+        cmd = f'ffmpeg -y -i {self.file} {find_name(self.file) + extension}'
+        subprocess.call(cmd.split(' '))
+        self.file = find_name(self.file) + extension
 
-    
 
 if __name__ == '__main__':
     image = Media(sys.argv[1])
